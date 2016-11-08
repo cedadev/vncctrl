@@ -73,7 +73,7 @@ chop($host = `uname -n`);
 
 &ParseOptions("-geometry",1,"-depth",1,"-pixelformat",1,"-name",1,"-kill",1,
 	      "-help",0,"-h",0,"--help",0,
-	      "-userdir",1, '-startup',1,'-xauthority',1);
+	      "-userdir",1, '-startup',1,'-xauthority',1,'-socat',0);
 
 &Usage() if ($opt{'-help'} || $opt{'-h'} || $opt{'--help'});
 
@@ -211,6 +211,35 @@ unless (kill 0, `cat $pidFile`) {
     close(LOG);
     die "\n";
 }
+
+# If option -socat is passed in, then also start socat in order to
+# listen on the TCP X port (6000 + display number) and forward the
+# connection to the Unix domain socket.  For use with versions of Xvnc
+# that listen only on the unix domain socket and not the TCP port (not
+# sure why they would do this...)
+#
+# It is possible to restrict socat to only listen / permit connections
+# from the local interface, but we don't do that because this needs to
+# work where the public hostname rather than "localhost" is used in
+# $DISPLAY.  (Similarly, where versions of Xvnc listen on the X port,
+# they do so on all network interfaces.)  In practice iptables will
+# block non-local connections in most setups.
+#
+if ($opt{'-socat'}) {
+    $x_port = 6000 + $displayNumber;
+    $cmd2 = "socat TCP-LISTEN:$x_port,reuseaddr,fork,su=nobody UNIX-CLIENT:/tmp/.X11-unix/X$displayNumber";
+    $pidFile2 = $pidFile . "2";
+    system("$cmd2 & echo \$! >>$pidFile2");
+    system("echo $pidFile2 > /dev/tty");
+    unless (kill 0, `cat $pidFile2`) {
+	warn "Couldn't start socat helper process.\n\n";
+	open(LOG, "<$desktopLog");
+	while (<LOG>) { print; }
+	close(LOG);
+	die "\n";
+    }
+}
+
 
 warn "\nNew '$desktopName' desktop is $host:$displayNumber\n\n";
 
@@ -483,6 +512,8 @@ sub Usage
 	"      Specifies path of auth file.\n".
 	"      Default: 'Xauthority' in userdir if -userdir flag also given,\n".
 	"               otherwise \$HOME/.Xauthority\n".
+	"   -socat\n".
+	"      Use socat to forward X connections from TCP port to Unix domain socket\n".
 	"\n"
 	);
 }
@@ -516,7 +547,14 @@ sub Kill
     warn "Killing Xvnc process ID $pid\n";
     system("kill $pid");
     unlink $pidFile;
-    exit;
+    if ($opt{'-socat'}) {
+	$pidFile2 = $pidFile + "2";
+	chop($pid2 = `cat $pidFile2`);
+	warn "Killing socat helper process ID $pid2\n";
+	system("kill $pid2");
+	unlink $pidFile2;
+	exit;
+    }
 }
 
 

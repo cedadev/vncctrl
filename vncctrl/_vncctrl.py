@@ -100,7 +100,8 @@ class VncCtrl:
         
         args = ['-localhost',
                 '-userdir', self.vncUserDir,
-                '-xauthority', self.xauthFile]
+                '-xauthority', self.xauthFile,
+                '-socat']
 
         #Note: perl is needed because when executing within an egg
         #      vncserver will not be marked executable.
@@ -121,7 +122,8 @@ class VncCtrl:
                 print "started server on %s" % display
             if self.testDisplay(display):
                 return display
-            raise RuntimeError("display just started on %s is not responding")
+            raise RuntimeError("display just started on %s is not responding"
+                               % display)
 
         else:
             raise RuntimeError("apparently launched vncserver " + 
