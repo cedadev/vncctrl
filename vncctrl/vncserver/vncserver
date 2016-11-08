@@ -230,7 +230,6 @@ if ($opt{'-socat'}) {
     $cmd2 = "socat TCP-LISTEN:$x_port,reuseaddr,fork,su=nobody UNIX-CLIENT:/tmp/.X11-unix/X$displayNumber";
     $pidFile2 = $pidFile . "2";
     system("$cmd2 & echo \$! >>$pidFile2");
-    system("echo $pidFile2 > /dev/tty");
     unless (kill 0, `cat $pidFile2`) {
 	warn "Couldn't start socat helper process.\n\n";
 	open(LOG, "<$desktopLog");
