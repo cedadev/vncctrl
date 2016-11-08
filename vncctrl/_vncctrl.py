@@ -355,7 +355,7 @@ def main():
                 extraArgs = ['-geometry', '800x800'],
                 promptPassword = False)
     print "Display is %s" % os.environ["DISPLAY"]
-    os.system("xwininfo -root")
+    os.system("xrandr --query")
 
 if __name__ == '__main__':
     main()
