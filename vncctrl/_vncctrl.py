@@ -205,6 +205,10 @@ class VncCtrl:
         if self.verbose:
             print "Testing display %s" % display
         
+        # On many servers the display name will exclude the localhost so remove 
+        # hostname for this test
+        display = ":" + display.split(":")[1]
+
         pid = os.fork()
         if not pid:
             # ---child---
@@ -355,7 +359,7 @@ def main():
                 extraArgs = ['-geometry', '800x800'],
                 promptPassword = False)
     print "Display is %s" % os.environ["DISPLAY"]
-    os.system("xrandr --query")
+#    os.system("xrandr --query")
 
 if __name__ == '__main__':
     main()
