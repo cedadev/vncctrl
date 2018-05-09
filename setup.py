@@ -1,18 +1,17 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.1'
+from vncctrl import __version__
 
 setup(name='vncctrl',
-      version=version,
+      version=__version__,
       description="Initiate a VNC connection within Python",
-      long_description="""\
-""",
+      long_description="",
       classifiers=[], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
       keywords='',
       author='Alan Iwi',
       author_email='alan.iwi@stfc.ac.uk',
-      url='',
+      url='https://github.com/cedadev/vncctrl',
       license='',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
